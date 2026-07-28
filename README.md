@@ -54,7 +54,7 @@ touch:
 ```js
 const CONFIG = {
   restaurantName: "Aftertaste",   // your restaurant's name
-  tagline: "Est. 2014",               // small line above the name
+  tagline: "Guest Feedback",               // small line above the name
   defaultTable: "Table 4",            // table shown first
   tables: ["Table 1", "Table 2", ...],// your tables / sections
   servers: ["Ava M.", "Marco R.", ...],// your staff
