@@ -64,7 +64,7 @@ export default function Feedback() {
 
   if (status === "loading") return <Centered>Loading…</Centered>;
   if (status === "notfound") return <Centered>This feedback page isn’t available.</Centered>;
-  return <FeedbackApp config={config} />;
+  return <FeedbackApp config={config} venueId={venueId} />;
 }
 
 function Centered({ children }) {
@@ -76,7 +76,7 @@ function Centered({ children }) {
 }
 
 /* ============================ The feedback experience ============================ */
-function FeedbackApp({ config }) {
+function FeedbackApp({ config, venueId }) {
   const [table, setTable] = useState(config.tables[0]);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -97,8 +97,29 @@ function FeedbackApp({ config }) {
   function resetAll() {
     setRating(0); setHover(0); setIssues([]); setComment(""); setServer(""); setServerVote(null); setStep("rating");
   }
-  function submitPrivate() { setSuccessKind("private"); setStep("success"); }
+  async function saveFeedback(outcome) {
+    try {
+      await supabase.from("feedback").insert({
+        venue_id: venueId,
+        rating,
+        outcome,
+        issues: outcome === "private" ? issues : [],
+        comment: outcome === "private" ? comment : "",
+        table_label: table,
+        server: server || null,
+        server_vote: serverVote,
+      });
+    } catch (_) {
+      // Never block the guest if saving fails.
+    }
+  }
+  function submitPrivate() {
+    saveFeedback("private");
+    setSuccessKind("private");
+    setStep("success");
+  }
   function goGoogle() {
+    saveFeedback("google");
     setSuccessKind("google");
     setStep("success");
     if (config.googleReviewUrl) window.open(config.googleReviewUrl, "_blank", "noopener,noreferrer");

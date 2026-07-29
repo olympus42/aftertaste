@@ -4,6 +4,7 @@ import { useSession } from "../useSession";
 import { QRCodeCanvas } from "qrcode.react";
 import {
   UtensilsCrossed, Plus, Trash2, Copy, Check, LogOut, Store, Users, QrCode,
+  Inbox, RefreshCw, Star, ThumbsUp, ThumbsDown,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState([]);
 
   useEffect(() => {
     if (!session) return;
@@ -44,6 +46,13 @@ export default function Dashboard() {
           .eq("venue_id", v.id)
           .order("created_at");
         if (active) setStaff(st || []);
+        const { data: fb } = await supabase
+          .from("feedback")
+          .select("*")
+          .eq("venue_id", v.id)
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (active) setFeedback(fb || []);
       }
       setLoading(false);
     })();
@@ -96,6 +105,21 @@ export default function Dashboard() {
     setStaff((s) => s.filter((x) => x.id !== id));
   }
 
+  async function refreshFeedback() {
+    if (!venue) return;
+    const { data: fb } = await supabase
+      .from("feedback")
+      .select("*")
+      .eq("venue_id", venue.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setFeedback(fb || []);
+  }
+
+  const avg = feedback.length
+    ? (feedback.reduce((s, f) => s + (f.rating || 0), 0) / feedback.length).toFixed(1)
+    : "—";
+
   const link = venue ? `${window.location.origin}/v/${venue.id}` : "";
 
   function copyLink() {
@@ -137,6 +161,69 @@ export default function Dashboard() {
         </header>
 
         <div className="relative z-10 mt-6 space-y-4">
+          {/* Feedback inbox */}
+          <Card icon={<Inbox className="h-4 w-4" />} title="Guest feedback">
+            <div className="-mt-1 flex items-center justify-between">
+              <p className="text-xs text-neutral-500">
+                {feedback.length === 0
+                  ? "No feedback yet — share your QR code to start collecting."
+                  : `${feedback.length} recent · average ${avg} ★`}
+              </p>
+              <button
+                onClick={refreshFeedback}
+                className="inline-flex items-center gap-1 text-xs text-neutral-400 transition hover:text-amber-300"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Refresh
+              </button>
+            </div>
+
+            <div className="mt-2 max-h-[360px] space-y-2 overflow-y-auto pr-1">
+              {feedback.map((f) => (
+                <div key={f.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star
+                          key={n}
+                          className={n <= f.rating ? "h-3.5 w-3.5 text-amber-400" : "h-3.5 w-3.5 text-neutral-700"}
+                          fill={n <= f.rating ? "currentColor" : "none"}
+                          strokeWidth={1.6}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-neutral-500">{timeAgo(f.created_at)}</span>
+                  </div>
+
+                  {f.comment && <p className="mt-2 text-sm text-neutral-200">“{f.comment}”</p>}
+
+                  {f.issues && f.issues.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {f.issues.map((i) => (
+                        <span key={i} className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] text-rose-300">
+                          {ISSUE_LABELS[i] || i}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-neutral-500">
+                    <span>{f.table_label}</span>
+                    {f.server && (
+                      <span className="inline-flex items-center gap-1">
+                        {f.server_vote === "up" && <ThumbsUp className="h-3 w-3 text-emerald-400" />}
+                        {f.server_vote === "down" && <ThumbsDown className="h-3 w-3 text-rose-400" />}
+                        {f.server}
+                      </span>
+                    )}
+                    <span className={f.outcome === "google" ? "text-amber-300" : "text-neutral-400"}>
+                      {f.outcome === "google" ? "→ Google" : "Private"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
           {/* Venue details */}
           <Card icon={<Store className="h-4 w-4" />} title="Your venue">
             <Field label="Venue name">
@@ -309,4 +396,22 @@ function Field({ label, children }) {
       {children}
     </label>
   );
+}
+
+const ISSUE_LABELS = {
+  food: "Food Quality",
+  speed: "Service Speed",
+  clean: "Cleanliness",
+  staff: "Staff Friendliness",
+};
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
 }
