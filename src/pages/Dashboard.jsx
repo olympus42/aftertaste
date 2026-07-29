@@ -4,7 +4,7 @@ import { useSession } from "../useSession";
 import { QRCodeCanvas } from "qrcode.react";
 import {
   UtensilsCrossed, Plus, Trash2, Copy, Check, LogOut, Store, Users, QrCode,
-  Inbox, RefreshCw, Star, ThumbsUp, ThumbsDown,
+  Inbox, RefreshCw, Star, ThumbsUp, ThumbsDown, Award,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -51,7 +51,7 @@ export default function Dashboard() {
           .select("*")
           .eq("venue_id", v.id)
           .order("created_at", { ascending: false })
-          .limit(50);
+          .limit(100);
         if (active) setFeedback(fb || []);
       }
       setLoading(false);
@@ -112,13 +112,38 @@ export default function Dashboard() {
       .select("*")
       .eq("venue_id", venue.id)
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(100);
     setFeedback(fb || []);
   }
 
   const avg = feedback.length
     ? (feedback.reduce((s, f) => s + (f.rating || 0), 0) / feedback.length).toFixed(1)
     : "—";
+
+  // Staff insights — a coaching aid, never an automated verdict.
+  const MIN_SAMPLE = 5;
+  const staffInsights = staff.map((s) => {
+    const rows = feedback.filter((f) => f.server === s.name);
+    const n = rows.length;
+    const ups = rows.filter((r) => r.server_vote === "up").length;
+    const downs = rows.filter((r) => r.server_vote === "down").length;
+    const rated = rows.filter((r) => typeof r.rating === "number");
+    const avgRating = rated.length ? rated.reduce((a, r) => a + r.rating, 0) / rated.length : null;
+    const votes = ups + downs;
+    const positivity = votes ? ups / votes : null;
+    const recent = [...rows]
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+      .slice(-8)
+      .map((r) => r.rating);
+
+    let status = "gathering";
+    if (n >= MIN_SAMPLE) {
+      if ((avgRating ?? 5) >= 4.2 && (positivity === null || positivity >= 0.7)) status = "recognize";
+      else if ((avgRating ?? 5) <= 3.2 || (positivity !== null && positivity <= 0.4)) status = "checkin";
+      else status = "steady";
+    }
+    return { id: s.id, name: s.name, n, ups, downs, avgRating, recent, status };
+  });
 
   const link = venue ? `${window.location.origin}/v/${venue.id}` : "";
 
@@ -219,6 +244,69 @@ export default function Dashboard() {
                       {f.outcome === "google" ? "→ Google" : "Private"}
                     </span>
                   </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Staff insights */}
+          <Card icon={<Award className="h-4 w-4" />} title="Staff insights">
+            <p className="-mt-1 text-xs text-neutral-500">
+              A coaching aid, not a verdict — patterns from guest feedback. You always make the call.
+            </p>
+            <div className="mt-2 space-y-2">
+              {staff.length === 0 && (
+                <p className="text-xs text-neutral-600">Add staff above to see their insights here.</p>
+              )}
+              {staffInsights.map((s) => (
+                <div key={s.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-neutral-100">{s.name}</span>
+                    <StatusPill status={s.status} />
+                  </div>
+
+                  {s.n < 5 ? (
+                    <div className="mt-2">
+                      <p className="text-[11px] text-neutral-500">
+                        Building a fair picture — {s.n} of 5 ratings so far.
+                      </p>
+                      <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
+                        <div
+                          className="h-full rounded-full bg-amber-400/70"
+                          style={{ width: `${Math.min(100, (s.n / 5) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-neutral-400">
+                        <span className="inline-flex items-center gap-1">
+                          <Star className="h-3 w-3 text-amber-400" fill="currentColor" strokeWidth={1.6} />
+                          {s.avgRating ? s.avgRating.toFixed(1) : "—"}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <ThumbsUp className="h-3 w-3 text-emerald-400" /> {s.ups}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <ThumbsDown className="h-3 w-3 text-rose-400" /> {s.downs}
+                        </span>
+                        <span className="text-neutral-600">· {s.n} ratings</span>
+                      </div>
+                      <div className="mt-2 flex items-center gap-1">
+                        <span className="mr-1 text-[10px] text-neutral-600">recent</span>
+                        {s.recent.map((r, i) => (
+                          <span
+                            key={i}
+                            title={`${r}★`}
+                            className={[
+                              "h-2 w-2 rounded-full",
+                              r >= 4 ? "bg-emerald-400" : r === 3 ? "bg-amber-400" : "bg-rose-400",
+                            ].join(" ")}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -404,6 +492,17 @@ const ISSUE_LABELS = {
   clean: "Cleanliness",
   staff: "Staff Friendliness",
 };
+
+function StatusPill({ status }) {
+  const map = {
+    recognize: { label: "Doing great", cls: "bg-emerald-400/10 text-emerald-300" },
+    steady: { label: "Steady", cls: "bg-white/[0.06] text-neutral-300" },
+    checkin: { label: "Worth a check-in", cls: "bg-amber-400/10 text-amber-300" },
+    gathering: { label: "Gathering", cls: "bg-white/[0.04] text-neutral-500" },
+  };
+  const s = map[status] || map.gathering;
+  return <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${s.cls}`}>{s.label}</span>;
+}
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
