@@ -36,12 +36,15 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-neutral-950 flex justify-center font-sans text-neutral-100">
-      <div className="relative w-full max-w-[430px] min-h-screen bg-gradient-to-b from-neutral-900 via-neutral-950 to-black overflow-hidden px-6 py-12">
-        <FloatingFood count={14} />
-        <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black px-5 py-12 font-sans text-neutral-100">
+      {/* full-screen drifting food + ambient glow */}
+      <FloatingFood count={22} />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-amber-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-orange-600/10 blur-3xl" />
 
-        <div className="relative z-10 flex flex-col items-center text-center">
+      {/* centered card that adapts to any screen */}
+      <div className="relative z-10 w-full max-w-sm rounded-3xl border border-white/10 bg-neutral-900/70 p-7 shadow-2xl backdrop-blur-md">
+        <div className="flex flex-col items-center text-center">
           <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-900/30 ring-1 ring-amber-300/40">
             <UtensilsCrossed className="h-7 w-7 text-neutral-900" strokeWidth={2.4} />
           </div>
@@ -52,14 +55,14 @@ export default function Login() {
           </p>
         </div>
 
-        <form onSubmit={submit} className="relative z-10 mt-9 space-y-3">
+        <form onSubmit={submit} className="mt-7 space-y-3">
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@restaurant.com"
-            className="w-full rounded-2xl border border-white/10 bg-neutral-950/60 px-4 py-3.5 text-sm text-neutral-100 placeholder:text-neutral-600 outline-none transition focus:border-amber-400/50"
+            className={inputCls}
           />
           <input
             type="password"
@@ -68,7 +71,7 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password (6+ characters)"
-            className="w-full rounded-2xl border border-white/10 bg-neutral-950/60 px-4 py-3.5 text-sm text-neutral-100 placeholder:text-neutral-600 outline-none transition focus:border-amber-400/50"
+            className={inputCls}
           />
 
           {error && <p className="text-xs text-rose-300">{error}</p>}
@@ -83,7 +86,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="relative z-10 mt-6 text-center">
+        <div className="mt-6 text-center">
           <button
             type="button"
             onClick={() => {
@@ -102,3 +105,6 @@ export default function Login() {
     </div>
   );
 }
+
+const inputCls =
+  "w-full rounded-2xl border border-white/10 bg-neutral-950/60 px-4 py-3.5 text-sm text-neutral-100 placeholder:text-neutral-600 outline-none transition focus:border-amber-400/50";
