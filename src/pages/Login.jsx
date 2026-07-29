@@ -43,7 +43,7 @@ export default function Login() {
       <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-orange-600/10 blur-3xl" />
 
       {/* centered card that adapts to any screen */}
-      <div className="relative z-10 w-full max-w-sm rounded-3xl bg-neutral-900 p-7 shadow-2xl">
+      <div className="relative z-10 w-full max-w-sm rounded-3xl border border-white/15 bg-gradient-to-b from-white/[0.12] to-white/[0.04] p-7 shadow-2xl shadow-black/50 backdrop-blur-2xl">
         <div className="flex flex-col items-center text-center">
           <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-900/30 ring-1 ring-amber-300/40">
             <UtensilsCrossed className="h-7 w-7 text-neutral-900" strokeWidth={2.4} />
