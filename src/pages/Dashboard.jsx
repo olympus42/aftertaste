@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { useSession } from "../useSession";
 import { QRCodeCanvas } from "qrcode.react";
+import FloatingFood from "../FloatingFood.jsx";
 import {
   UtensilsCrossed, Plus, Trash2, Copy, Check, LogOut, Store, Users, QrCode,
   Inbox, RefreshCw, Star, ThumbsUp, ThumbsDown, Award,
@@ -163,7 +164,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen w-full bg-neutral-950 flex justify-center font-sans text-neutral-100">
-      <div className="relative w-full max-w-[560px] min-h-screen bg-gradient-to-b from-neutral-900 via-neutral-950 to-black px-6 py-8">
+      <div className="relative w-full max-w-[560px] min-h-screen overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black px-6 py-8">
+        <FloatingFood count={16} />
         <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
 
         {/* Header */}

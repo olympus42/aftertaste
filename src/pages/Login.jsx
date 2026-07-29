@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { UtensilsCrossed } from "lucide-react";
+import FloatingFood from "../FloatingFood.jsx";
 
 export default function Login() {
   const [mode, setMode] = useState("signin"); // signin | signup
@@ -37,6 +38,7 @@ export default function Login() {
   return (
     <div className="min-h-screen w-full bg-neutral-950 flex justify-center font-sans text-neutral-100">
       <div className="relative w-full max-w-[430px] min-h-screen bg-gradient-to-b from-neutral-900 via-neutral-950 to-black overflow-hidden px-6 py-12">
+        <FloatingFood count={14} />
         <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
 
         <div className="relative z-10 flex flex-col items-center text-center">
