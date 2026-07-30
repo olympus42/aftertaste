@@ -5,7 +5,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import FloatingFood from "../FloatingFood.jsx";
 import {
   UtensilsCrossed, Plus, Trash2, Copy, Check, LogOut, Store, Users, QrCode,
-  Inbox, RefreshCw, Star, ThumbsUp, ThumbsDown, Award,
+  Inbox, RefreshCw, Star, ThumbsUp, ThumbsDown, Award, BookOpen,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -20,6 +20,8 @@ export default function Dashboard() {
   const [feedback, setFeedback] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
+  const [newDish, setNewDish] = useState({ name: "", price: "", description: "" });
 
   useEffect(() => {
     if (!session) return;
@@ -56,6 +58,12 @@ export default function Dashboard() {
           .order("created_at", { ascending: false })
           .limit(100);
         if (active) setFeedback(fb || []);
+        const { data: mi } = await supabase
+          .from("menu_items")
+          .select("*")
+          .eq("venue_id", v.id)
+          .order("created_at");
+        if (active) setMenuItems(mi || []);
       }
       setLoading(false);
     })();
@@ -107,6 +115,30 @@ export default function Dashboard() {
   async function removeStaff(id) {
     await supabase.from("staff").delete().eq("id", id);
     setStaff((s) => s.filter((x) => x.id !== id));
+  }
+
+  async function addDish() {
+    const name = newDish.name.trim();
+    if (!name || !venue) return;
+    const { data } = await supabase
+      .from("menu_items")
+      .insert({
+        venue_id: venue.id,
+        name,
+        price: newDish.price.trim() || null,
+        description: newDish.description.trim() || null,
+      })
+      .select()
+      .single();
+    if (data) {
+      setMenuItems((m) => [...m, data]);
+      setNewDish({ name: "", price: "", description: "" });
+    }
+  }
+
+  async function removeDish(id) {
+    await supabase.from("menu_items").delete().eq("id", id);
+    setMenuItems((m) => m.filter((x) => x.id !== id));
   }
 
   async function refreshFeedback() {
@@ -452,6 +484,71 @@ export default function Dashboard() {
             </div>
           </Card>
 
+          {/* Menu */}
+          <Card icon={<BookOpen className="h-4 w-4" />} title="Your menu">
+            <p className="-mt-1 mb-1 text-xs text-neutral-500">
+              Dishes guests can browse from the "View our menu" button.
+            </p>
+            <div className="space-y-2">
+              <input
+                value={newDish.name}
+                onChange={(e) => setNewDish({ ...newDish, name: e.target.value })}
+                placeholder="Dish name"
+                className={inputCls}
+              />
+              <div className="flex gap-2">
+                <input
+                  value={newDish.price}
+                  onChange={(e) => setNewDish({ ...newDish, price: e.target.value })}
+                  placeholder="Price (e.g. $12)"
+                  className={inputCls}
+                />
+                <button
+                  onClick={addDish}
+                  className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-xl bg-amber-400 text-neutral-900 transition hover:brightness-105 active:scale-95"
+                  aria-label="Add dish"
+                >
+                  <Plus className="h-5 w-5" strokeWidth={2.6} />
+                </button>
+              </div>
+              <input
+                value={newDish.description}
+                onChange={(e) => setNewDish({ ...newDish, description: e.target.value })}
+                placeholder="Short description (optional)"
+                className={inputCls}
+              />
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {menuItems.length === 0 && (
+                <p className="text-xs text-neutral-600">No dishes yet.</p>
+              )}
+              {menuItems.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-2.5"
+                >
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm text-neutral-100">{m.name}</span>
+                      {m.price && <span className="text-xs text-amber-300">{m.price}</span>}
+                    </div>
+                    {m.description && (
+                      <p className="mt-0.5 text-xs text-neutral-500">{m.description}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeDish(m.id)}
+                    className="mt-0.5 text-neutral-500 transition hover:text-rose-300"
+                    aria-label={`Remove ${m.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Card>
+
           {/* Share / QR */}
           <Card icon={<QrCode className="h-4 w-4" />} title="Your feedback link">
             <p className="-mt-1 text-xs text-neutral-500">
@@ -533,7 +630,7 @@ const inputCls =
 
 function Card({ icon, title, children }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+    <section className="rounded-3xl border border-white/15 bg-gradient-to-b from-white/[0.1] to-white/[0.03] p-5 backdrop-blur-xl">
       <div className="mb-3 flex items-center gap-2 text-amber-300">
         {icon}
         <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-200">{title}</h2>

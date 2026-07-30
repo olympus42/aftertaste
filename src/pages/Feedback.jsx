@@ -5,7 +5,7 @@ import FloatingFood from "../FloatingFood.jsx";
 import {
   Star, UtensilsCrossed, Coffee, ThumbsUp, ThumbsDown, Check, ChevronDown,
   Sparkles, Heart, MessageSquareText, ChefHat, Timer, SprayCan, Smile,
-  ArrowLeft, Gift, PartyPopper,
+  ArrowLeft, Gift, PartyPopper, X, BookOpen,
 } from "lucide-react";
 
 const ISSUES = [
@@ -42,6 +42,12 @@ export default function Feedback() {
         .eq("venue_id", venueId)
         .order("created_at");
 
+      const { data: menu } = await supabase
+        .from("menu_items")
+        .select("*")
+        .eq("venue_id", venueId)
+        .order("created_at");
+
       const tables = [];
       for (let i = 1; i <= (venue.table_count || 0); i++) tables.push(`Table ${i}`);
       for (let i = 1; i <= (venue.bar_count || 0); i++) tables.push(`Bar ${i}`);
@@ -56,6 +62,7 @@ export default function Feedback() {
         googleReviewUrl: venue.google_review_url || "",
         reward: venue.reward || "a treat",
         cuisine: venue.cuisine || "mixed",
+        menu: menu || [],
       });
       setStatus("ready");
     })();
@@ -88,6 +95,7 @@ function FeedbackApp({ config, venueId }) {
   const [comment, setComment] = useState("");
   const [server, setServer] = useState("");
   const [serverVote, setServerVote] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
   const savedRef = useRef(false);
 
   function chooseRating(n) {
@@ -133,12 +141,13 @@ function FeedbackApp({ config, venueId }) {
   function backToRating() { setStep("rating"); setRating(0); setHover(0); }
 
   return (
-    <div className="min-h-screen w-full bg-neutral-950 flex justify-center font-sans text-neutral-100 antialiased selection:bg-amber-400/30">
+    <div className="relative flex min-h-screen w-full justify-center overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black font-sans text-neutral-100 antialiased selection:bg-amber-400/30">
       <StyleTag />
-      <div className="relative w-full max-w-[430px] min-h-screen bg-gradient-to-b from-neutral-900 via-neutral-950 to-black overflow-hidden shadow-2xl">
-        <FloatingFood count={12} cuisine={config.cuisine} />
-        <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute top-1/3 -left-20 h-56 w-56 rounded-full bg-orange-600/10 blur-3xl" />
+      <FloatingFood count={18} cuisine={config.cuisine} />
+      <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 left-0 h-64 w-64 rounded-full bg-orange-600/10 blur-3xl" />
+
+      <div className="relative z-10 w-full max-w-[430px]">
 
         <header className="relative z-10 px-6 pt-8 pb-5">
           <div className="flex items-center justify-between gap-3">
@@ -154,6 +163,16 @@ function FeedbackApp({ config, venueId }) {
             <TableSelector table={table} setTable={setTable} tables={config.tables} />
           </div>
           <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+          {config.menu && config.menu.length > 0 && (
+            <div className="mt-3 text-center">
+              <button
+                onClick={() => setShowMenu(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-300/90 transition hover:text-amber-200"
+              >
+                <BookOpen className="h-3.5 w-3.5" /> View our menu
+              </button>
+            </div>
+          )}
         </header>
 
         <main className="relative z-10 px-6 pb-16">
@@ -186,6 +205,42 @@ function FeedbackApp({ config, venueId }) {
               Your feedback goes straight to our owners · {table}
             </p>
           </footer>
+        )}
+
+        {showMenu && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm"
+            onClick={() => setShowMenu(false)}
+          >
+            <div
+              className="max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-3xl border border-white/15 bg-neutral-900 p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="font-serif text-xl text-neutral-50">Menu</h3>
+                <button
+                  onClick={() => setShowMenu(false)}
+                  aria-label="Close menu"
+                  className="text-neutral-400 transition hover:text-neutral-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="mt-4 space-y-3">
+                {config.menu.map((item) => (
+                  <div key={item.id} className="border-b border-white/5 pb-3 last:border-0">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm font-medium text-neutral-100">{item.name}</span>
+                      {item.price && <span className="shrink-0 text-sm text-amber-300">{item.price}</span>}
+                    </div>
+                    {item.description && (
+                      <p className="mt-0.5 text-xs text-neutral-400">{item.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
