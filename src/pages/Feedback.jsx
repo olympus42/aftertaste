@@ -195,7 +195,13 @@ function FeedbackApp({ config, venueId }) {
             />
           )}
           {step === "success" && (
-            <SuccessStep kind={successKind} table={table} reward={config.reward} onDone={resetAll} />
+            <SuccessStep
+              kind={successKind}
+              table={table}
+              reward={config.reward}
+              googleReviewUrl={config.googleReviewUrl}
+              onDone={resetAll}
+            />
           )}
         </main>
 
@@ -357,7 +363,7 @@ function PositiveStep({ rating, onBack, onGoogle, reward, servers, server, setSe
         <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3">
           <Gift className="h-5 w-5 text-amber-300" />
           <p className="text-left text-xs text-amber-100">
-            Show your review to your server for <span className="font-semibold text-amber-300">{reward}</span>.
+            A little thank-you for your feedback: <span className="font-semibold text-amber-300">{reward}</span> — just ask your server.
           </p>
         </div>
         <button
@@ -365,7 +371,7 @@ function PositiveStep({ rating, onBack, onGoogle, reward, servers, server, setSe
           className="group mt-5 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-4 text-sm font-semibold text-neutral-900 shadow-lg shadow-amber-900/30 transition-all duration-200 hover:brightness-105 active:scale-[0.98]"
         >
           <Coffee className="h-5 w-5 transition-transform group-hover:-rotate-6" />
-          Review Us on Google &amp; Get a Free Treat
+          Leave a Google review
         </button>
         <p className="mt-3 text-[11px] text-neutral-500">Opens Google · takes about 20 seconds</p>
       </div>
@@ -475,7 +481,7 @@ function StaffRating({ servers, server, setServer, serverVote, setServerVote }) 
   );
 }
 
-function SuccessStep({ kind, table, reward, onDone }) {
+function SuccessStep({ kind, table, reward, googleReviewUrl, onDone }) {
   const [count, setCount] = useState(6);
   useEffect(() => {
     const id = setInterval(() => setCount((c) => (c > 0 ? c - 1 : 0)), 1000);
@@ -498,15 +504,25 @@ function SuccessStep({ kind, table, reward, onDone }) {
       <h2 className="mt-7 font-serif text-3xl text-neutral-50">{google ? "Thank you!" : "Feedback received"}</h2>
       <p className="mx-auto mt-3 max-w-[17rem] text-sm text-neutral-300">
         {google
-          ? `You're being taken to Google. Don't forget to show your review for ${reward}!`
-          : "Our owners will personally review your notes. Thank you for helping us do better."}
+          ? "Thank you! You're being taken to Google to share your experience."
+          : "Our owners will personally read your notes and work to make it right. Thank you."}
       </p>
       <div className="mt-6 flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs text-neutral-400">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Logged from {table}
       </div>
+      {!google && googleReviewUrl && (
+        <a
+          href={googleReviewUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 text-xs text-amber-300/90 underline underline-offset-2 transition hover:text-amber-200"
+        >
+          You're also welcome to share your experience publicly on Google
+        </a>
+      )}
       <button
         type="button" onClick={onDone}
-        className="mt-8 rounded-full border border-white/15 bg-white/[0.04] px-6 py-2.5 text-sm font-medium text-neutral-200 transition hover:border-amber-400/40 hover:text-amber-200"
+        className="mt-6 rounded-full border border-white/15 bg-white/[0.04] px-6 py-2.5 text-sm font-medium text-neutral-200 transition hover:border-amber-400/40 hover:text-amber-200"
       >
         Done
       </button>
