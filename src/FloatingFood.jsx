@@ -1,10 +1,21 @@
 import { useRef } from "react";
 
-const FOODS = ["🍕", "🍔", "🍟", "🌮", "🥤", "🍩", "🌭", "🥗", "🍦", "🧀", "🥐", "🍣", "🍜", "🧁"];
+const CUISINE_FOODS = {
+  mixed:   ["🍕", "🍔", "🍟", "🌮", "🥤", "🍩", "🌭", "🥗", "🍦", "🧀", "🥐", "🍣", "🍜", "🧁"],
+  burgers: ["🍔", "🍟", "🌭", "🥤", "🧀", "🥓", "🍅", "🧅"],
+  pizza:   ["🍕", "🧀", "🍅", "🌿", "🍷", "🥖", "🫒"],
+  diner:   ["🍔", "🍟", "🥞", "🧇", "🍩", "🌭", "🥤", "☕"],
+  italian: ["🍝", "🍕", "🧀", "🍷", "🥖", "🍅", "🫒"],
+  mexican: ["🌮", "🌯", "🌶️", "🥑", "🫓", "🌽", "🍋", "🧀"],
+  thai:    ["🍜", "🍛", "🌶️", "🍤", "🍚", "🥥", "🍋", "🥢"],
+  chinese: ["🥡", "🍜", "🥟", "🍚", "🍤", "🍥", "🥠", "🫖"],
+};
 
 // A decorative, zero-gravity food layer. Sits behind page content
 // (z-0, pointer-events off) so it never interferes with the UI.
-export default function FloatingFood({ count = 16 }) {
+// `cuisine` chooses which food set floats around (defaults to a mix).
+export default function FloatingFood({ count = 16, cuisine = "mixed" }) {
+  const FOODS = CUISINE_FOODS[cuisine] || CUISINE_FOODS.mixed;
   const items = useRef(
     Array.from({ length: count }).map(() => ({
       emoji: FOODS[Math.floor(Math.random() * FOODS.length)],
