@@ -18,6 +18,8 @@ export default function Dashboard() {
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!session) return;
@@ -115,6 +117,17 @@ export default function Dashboard() {
       .order("created_at", { ascending: false })
       .limit(100);
     setFeedback(fb || []);
+  }
+
+  async function deleteAccount() {
+    setDeleting(true);
+    const { error } = await supabase.rpc("delete_own_account");
+    if (error) {
+      setDeleting(false);
+      alert("Sorry, we couldn't delete your account. Please try again.");
+      return;
+    }
+    await supabase.auth.signOut();
   }
 
   const avg = feedback.length
@@ -455,6 +468,39 @@ export default function Dashboard() {
             </div>
           </Card>
 
+        </div>
+
+        {/* Danger zone */}
+        <div className="relative z-10 mx-auto mt-6 max-w-sm text-center">
+          {!confirmDelete ? (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="text-xs text-neutral-600 underline-offset-2 transition hover:text-rose-300 hover:underline"
+            >
+              Delete my account
+            </button>
+          ) : (
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/[0.06] p-4">
+              <p className="text-xs text-rose-200">
+                This permanently deletes your account, venue, staff, and all feedback. This can't be undone.
+              </p>
+              <div className="mt-3 flex justify-center gap-2">
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-xs font-medium text-neutral-200 transition hover:border-white/25"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={deleteAccount}
+                  disabled={deleting}
+                  className="rounded-full bg-rose-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-400 disabled:opacity-60"
+                >
+                  {deleting ? "Deleting…" : "Yes, delete everything"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <p className="relative z-10 pb-8 pt-3 text-center text-[11px] text-neutral-600">

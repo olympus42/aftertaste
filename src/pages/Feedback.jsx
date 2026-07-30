@@ -87,6 +87,7 @@ function FeedbackApp({ config, venueId }) {
   const [comment, setComment] = useState("");
   const [server, setServer] = useState("");
   const [serverVote, setServerVote] = useState(null);
+  const savedRef = useRef(false);
 
   function chooseRating(n) {
     setRating(n);
@@ -97,8 +98,11 @@ function FeedbackApp({ config, venueId }) {
   }
   function resetAll() {
     setRating(0); setHover(0); setIssues([]); setComment(""); setServer(""); setServerVote(null); setStep("rating");
+    savedRef.current = false;
   }
   async function saveFeedback(outcome) {
+    if (savedRef.current) return; // guard against double submits
+    savedRef.current = true;
     try {
       await supabase.from("feedback").insert({
         venue_id: venueId,
@@ -356,7 +360,7 @@ function NegativeStep({ rating, issues, toggleIssue, comment, setComment, onBack
             <MessageSquareText className="h-3.5 w-3.5" /> Tell us more
           </label>
           <textarea
-            value={comment} onChange={(e) => setComment(e.target.value)} rows={4}
+            value={comment} onChange={(e) => setComment(e.target.value)} rows={4} maxLength={2000}
             placeholder="What happened? The more detail, the faster we can make it right…"
             className="mt-2 w-full resize-none rounded-2xl border border-white/10 bg-neutral-950/60 p-3.5 text-sm text-neutral-100 placeholder:text-neutral-600 outline-none transition focus:border-amber-400/50 focus:bg-neutral-950"
           />
