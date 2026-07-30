@@ -210,7 +210,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen w-full bg-neutral-950 flex justify-center font-sans text-neutral-100">
-      <div className="relative w-full max-w-[560px] lg:max-w-4xl min-h-screen overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black px-6 py-8">
+      <div className="relative w-full max-w-[560px] lg:max-w-none min-h-screen overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black px-6 py-8 lg:px-10">
         <FloatingFood count={16} cuisine={venue.cuisine || "mixed"} key={venue.cuisine || "mixed"} />
         <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
 
@@ -233,7 +233,7 @@ export default function Dashboard() {
           </button>
         </header>
 
-        <div className="relative z-10 mt-6 space-y-4 lg:columns-2 lg:gap-4 lg:space-y-0 [&>section]:mb-4 [&>section]:break-inside-avoid">
+        <div className="relative z-10 mt-6 space-y-4 lg:columns-2 xl:columns-3 lg:gap-4 lg:space-y-0 [&>section]:mb-4 [&>section]:break-inside-avoid">
           {/* Feedback inbox */}
           <Card icon={<Inbox className="h-4 w-4" />} title="Guest feedback">
             <div className="-mt-1 flex items-center justify-between">
