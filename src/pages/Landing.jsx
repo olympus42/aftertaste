@@ -70,8 +70,9 @@ export default function Landing() {
       </section>
 
       {/* Big statement */}
-      <section className="border-y border-white/5 bg-neutral-950 px-6 py-24">
-        <div className="mx-auto max-w-3xl text-center">
+      <section className="relative overflow-hidden border-y border-white/5 bg-neutral-950 px-6 py-24">
+        <FloatingFood count={12} />
+        <div className="relative z-10 mx-auto max-w-3xl text-center">
           <p className="font-serif text-3xl leading-snug text-neutral-100 sm:text-4xl">
             Most unhappy guests never say a word. They just don't come back — and leave a
             one-star review weeks later.
@@ -83,8 +84,9 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="bg-gradient-to-b from-neutral-950 to-black px-6 py-24">
-        <div className="mx-auto max-w-5xl">
+      <section id="how" className="relative overflow-hidden bg-gradient-to-b from-neutral-950 to-black px-6 py-24">
+        <FloatingFood count={12} />
+        <div className="relative z-10 mx-auto max-w-5xl">
           <h2 className="text-center font-serif text-3xl text-neutral-50">How it works</h2>
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             <Step n="1" icon={<QrCode className="h-5 w-5" />} title="Scan">
@@ -101,8 +103,9 @@ export default function Landing() {
       </section>
 
       {/* Features */}
-      <section className="bg-black px-6 py-24">
-        <div className="mx-auto max-w-6xl">
+      <section className="relative overflow-hidden bg-black px-6 py-24">
+        <FloatingFood count={14} />
+        <div className="relative z-10 mx-auto max-w-6xl">
           <h2 className="text-center font-serif text-3xl text-neutral-50">Everything a venue needs</h2>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Feature icon={<QrCode className="h-5 w-5" />} title="QR feedback">
