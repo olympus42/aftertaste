@@ -80,6 +80,7 @@ export default function Dashboard() {
         bar_count: Number(venue.bar_count) || 0,
         google_review_url: venue.google_review_url,
         reward: venue.reward,
+        cuisine: venue.cuisine || "mixed",
       })
       .eq("id", venue.id);
     setSaving(false);
@@ -178,7 +179,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen w-full bg-neutral-950 flex justify-center font-sans text-neutral-100">
       <div className="relative w-full max-w-[560px] lg:max-w-4xl min-h-screen overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black px-6 py-8">
-        <FloatingFood count={16} />
+        <FloatingFood count={16} cuisine={venue.cuisine || "mixed"} key={venue.cuisine || "mixed"} />
         <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
 
         {/* Header */}
@@ -344,6 +345,22 @@ export default function Dashboard() {
                 className={inputCls}
                 placeholder="e.g. Est. 2021"
               />
+            </Field>
+            <Field label="Cuisine (sets your floating food)">
+              <select
+                value={venue.cuisine || "mixed"}
+                onChange={(e) => setField("cuisine", e.target.value)}
+                className={inputCls}
+              >
+                <option value="mixed" className="bg-neutral-900">Mixed / Other</option>
+                <option value="burgers" className="bg-neutral-900">Burgers</option>
+                <option value="pizza" className="bg-neutral-900">Pizza</option>
+                <option value="diner" className="bg-neutral-900">American Diner</option>
+                <option value="italian" className="bg-neutral-900">Italian</option>
+                <option value="mexican" className="bg-neutral-900">Mexican</option>
+                <option value="thai" className="bg-neutral-900">Thai</option>
+                <option value="chinese" className="bg-neutral-900">Chinese</option>
+              </select>
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Number of tables">

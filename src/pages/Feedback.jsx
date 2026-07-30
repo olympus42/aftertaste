@@ -55,6 +55,7 @@ export default function Feedback() {
         servers: (staff || []).map((s) => s.name),
         googleReviewUrl: venue.google_review_url || "",
         reward: venue.reward || "a treat",
+        cuisine: venue.cuisine || "mixed",
       });
       setStatus("ready");
     })();
@@ -135,7 +136,7 @@ function FeedbackApp({ config, venueId }) {
     <div className="min-h-screen w-full bg-neutral-950 flex justify-center font-sans text-neutral-100 antialiased selection:bg-amber-400/30">
       <StyleTag />
       <div className="relative w-full max-w-[430px] min-h-screen bg-gradient-to-b from-neutral-900 via-neutral-950 to-black overflow-hidden shadow-2xl">
-        <FloatingFood count={12} />
+        <FloatingFood count={12} cuisine={config.cuisine} />
         <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="pointer-events-none absolute top-1/3 -left-20 h-56 w-56 rounded-full bg-orange-600/10 blur-3xl" />
 
